@@ -4,20 +4,16 @@ import wavio
 import librosa
 import tkinter as tk
 from tkinter import messagebox
-from sklearn import svm
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
 import speech_recognition as sr
 import pyttsx3
 import subprocess
 import sys
 import pytesseract
 from PIL import ImageGrab
-import pytesseract
+import difflib
 
 # Set the path to tesseract executable
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-
 
 # Initialize text-to-speech engine
 engine = pyttsx3.init()
@@ -136,8 +132,14 @@ def authenticate_password():
         filename = "temp_password.wav"
         record_audio(filename, duration=5)  # Record audio for 5 seconds
         password = transcribe_speech(filename)  # Transcribe audio to text
-        
-        if password.lower() == "nightmare":
+
+        expected_phrases = ["hi nightmare", "hi night mare", "hi nightmair"]
+        similarity_threshold = 0.6  # Adjust this threshold as needed
+
+        # Check if any of the expected phrases are similar to the recognized password
+        match = any(difflib.SequenceMatcher(None, password.lower(), phrase).ratio() > similarity_threshold for phrase in expected_phrases)
+
+        if match:
             auth_window.destroy()
             # Proceed to main application
             main_app()
